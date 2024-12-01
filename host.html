@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Chat - Host</title>
+</head>
+
+<body>
+    <h1>WebRTC Chat - Host</h1>
+    <p>Step 1: Generate the "offer" and share it with the peer</p>
+    <p>Step 2: Wait for the peer to paste the "answer" and click "Accept Answer"</p>
+    <p>Step 3: Once the connection is made, you will be able to send and receive messages</p>
+    <textarea id="offer" placeholder="Offer will appear here" rows="10" cols="50"></textarea>
+    <textarea id="answer" placeholder="Paste answer here" rows="10" cols="50"></textarea>
+    <input type="text" id="message" placeholder="Enter message">
+    <button onclick="sendMessage()">Send Message</button>
+    <button onclick="startHost()">Generate Offer</button>
+    <button onclick="acceptAnswer()">Accept Answer</button>
+    <div id="chat"></div>
+    <p id="connectionStatus">Waiting for connection...</p>
+
+    <script>
+        let localConnection;
+        let sendChannel;
+        const offerTextarea = document.getElementById('offer');
+        const answerTextarea = document.getElementById('answer');
+        const chat = document.getElementById('chat');
+        const connectionStatus = document.getElementById('connectionStatus');
+        const iceCandidates = [];
+
+        async function startHost() {
+            const config = {
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            };
+            localConnection = new RTCPeerConnection(config);
+
+            sendChannel = localConnection.createDataChannel('sendChannel');
+            sendChannel.onopen = () => {
+                console.log('Data channel opened');
+                connectionStatus.textContent = "Connected to Peer";
+            };
+            sendChannel.onmessage = handleMessage;
+            sendChannel.onclose = () => {
+                console.log('Data channel closed');
+                connectionStatus.textContent = "Disconnected from Peer";
+            };
+
+            localConnection.onicecandidate = ({ candidate }) => {
+                if (candidate) {
+                    iceCandidates.push(candidate);
+                    offerTextarea.value = btoa(JSON.stringify(localConnection.localDescription));
+                }
+            };
+
+            const offer = await localConnection.createOffer();
+            await localConnection.setLocalDescription(offer);
+            offerTextarea.value = btoa(JSON.stringify(offer));
+        }
+
+        async function acceptAnswer() {
+            const answer = JSON.parse(atob(answerTextarea.value));
+            await localConnection.setRemoteDescription(answer);
+
+            for (const candidate of iceCandidates) {
+                await localConnection.addIceCandidate(candidate);
+            }
+        }
+
+        function sendMessage() {
+            if (sendChannel.readyState === 'open') {
+                const message = document.getElementById('message').value;
+                chat.innerHTML += `<p>Host: ${message}</p>`;
+                sendChannel.send(message);
+            } else {
+                console.error('Data channel is not open');
+            }
+        }
+
+        function handleMessage(event) {
+            chat.innerHTML += `<p>Peer: ${event.data}</p>`;
+        }
+    </script>
+</body>
+
+</html>

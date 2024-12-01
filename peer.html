@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebRTC Chat - Peer</title>
+</head>
+
+<body>
+    <h1>WebRTC Chat - Peer</h1>
+    <p>Step 1: Ask the host for the "offer" and paste it into the offer box</p>
+    <p>Step 2: Generate Answer and send the answer to the host</p>
+    <p>Step 3: Wait for the connection to be made then start chatting</p>
+    <textarea id="offer" placeholder="Paste host offer here" rows="10" cols="50"></textarea>
+    <textarea id="answer" placeholder="Answer will appear here" rows="10" cols="50"></textarea>
+    <input type="text" id="message" placeholder="Enter message">
+    <button onclick="sendMessage()">Send Message</button>
+    <button onclick="startPeer()">Generate Answer</button>
+    <div id="chat"></div>
+    <p id="connectionStatus">Waiting for connection...</p>
+
+    <script>
+        let remoteConnection;
+        let receiveChannel;
+        const offerTextarea = document.getElementById('offer');
+        const answerTextarea = document.getElementById('answer');
+        const chat = document.getElementById('chat');
+        const iceCandidates = [];
+
+        async function startPeer() {
+            const config = {
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            };
+            remoteConnection = new RTCPeerConnection(config);
+
+            remoteConnection.ondatachannel = (event) => {
+                receiveChannel = event.channel;
+                receiveChannel.onopen = () => {
+                    console.log('Data channel opened');
+                    connectionStatus.textContent = "Connected to Host";
+                };
+                receiveChannel.onmessage = (event) => {
+                    chat.innerHTML += `<p>Host: ${event.data}</p>`;
+                };
+            };
+
+            remoteConnection.onicecandidate = ({ candidate }) => {
+                if (candidate) {
+                    iceCandidates.push(candidate);
+                    answerTextarea.value = btoa(JSON.stringify(remoteConnection.localDescription));
+                }
+            };
+
+            const offer = JSON.parse(atob(offerTextarea.value)); // Decode Base64
+            await remoteConnection.setRemoteDescription(offer);
+
+            const answer = await remoteConnection.createAnswer();
+            await remoteConnection.setLocalDescription(answer);
+            answerTextarea.value = btoa(JSON.stringify(answer)); // Encode answer as Base64
+        }
+
+        function sendMessage() {
+            const message = document.getElementById('message').value;
+            if (receiveChannel && receiveChannel.readyState === 'open') {
+                chat.innerHTML += `<p>Peer: ${message}</p>`;
+                receiveChannel.send(message);
+            } else {
+                console.error('Data channel is not open');
+            }
+        }
+    </script>
+</body>
+
+</html>
