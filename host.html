@@ -12,6 +12,9 @@
     <p>Step 1: Generate the "offer" and share it with the peer</p>
     <p>Step 2: Wait for the peer to paste the "answer" and click "Accept Answer"</p>
     <p>Step 3: Once the connection is made, you will be able to send and receive messages</p>
+    <!-- Name Inputs -->
+    <input type="text" id="hostName" placeholder="Enter your name" />
+    <p>Enter offer and answer</p>
     <textarea id="offer" placeholder="Offer will appear here" rows="10" cols="50"></textarea>
     <textarea id="answer" placeholder="Paste answer here" rows="10" cols="50"></textarea>
     <input type="text" id="message" placeholder="Enter message">
@@ -22,6 +25,7 @@
     <p id="connectionStatus">Waiting for connection...</p>
 
     <script>
+
         let localConnection;
         let sendChannel;
         const offerTextarea = document.getElementById('offer');
@@ -29,8 +33,15 @@
         const chat = document.getElementById('chat');
         const connectionStatus = document.getElementById('connectionStatus');
         const iceCandidates = [];
+        const hostNameInput = document.getElementById('hostName');
+        let peerName = 'Peer';
 
         async function startHost() {
+            if (!hostNameInput.value) {
+                alert('Please enter your name');
+                return;
+            }
+
             const config = {
                 iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
             };
@@ -39,9 +50,21 @@
             sendChannel = localConnection.createDataChannel('sendChannel');
             sendChannel.onopen = () => {
                 console.log('Data channel opened');
-                connectionStatus.textContent = "Connected to Peer";
+                connectionStatus.textContent = `Connected to ${peerName}`;
+
+                sendChannel.send(`NAME:${hostNameInput.value}`);
+
+                offerTextarea.style.display = 'none';
+                answerTextarea.style.display = 'none';
             };
-            sendChannel.onmessage = handleMessage;
+            sendChannel.onmessage = (event) => {
+                if (event.data.startsWith('NAME:')) {
+                    peerName = event.data.substring(5);
+                    connectionStatus.textContent = `Connected to ${peerName}`;
+                } else {
+                    chat.innerHTML += `<p>${peerName}: ${event.data}</p>`;
+                }
+            };
             sendChannel.onclose = () => {
                 console.log('Data channel closed');
                 connectionStatus.textContent = "Disconnected from Peer";
@@ -71,16 +94,13 @@
         function sendMessage() {
             if (sendChannel.readyState === 'open') {
                 const message = document.getElementById('message').value;
-                chat.innerHTML += `<p>Host: ${message}</p>`;
+                chat.innerHTML += `<p>${hostNameInput.value}: ${message}</p>`;
                 sendChannel.send(message);
             } else {
                 console.error('Data channel is not open');
             }
         }
 
-        function handleMessage(event) {
-            chat.innerHTML += `<p>Peer: ${event.data}</p>`;
-        }
     </script>
 </body>
 
