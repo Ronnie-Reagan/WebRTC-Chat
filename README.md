@@ -13,15 +13,17 @@ This project provides a WebRTC-based chat service that allows a "Host" and a "Pe
 
 To use this service, follow these steps:
 
+Open this this [link](https://ronnie-reagan.github.io/WebRTC-Chat/)
+
 ### Step 1: Start the Host
 
-1. Open the `host.html` file in your browser.
+1. Select "Open Host Page"
 2. Click on **Generate Offer** to create an offer.
 3. Copy the generated offer and send it to the Peer (via email, message, etc.).
 
 ### Step 2: Start the Peer
 
-1. Open the `peer.html` file in your browser.
+1. Select "Open Peer Page"
 2. Paste the Host's offer into the **Offer** textarea.
 3. Click **Generate Answer** to create an answer.
 4. Send the answer back to the Host.
