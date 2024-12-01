@@ -1,4 +1,4 @@
-# WebRTC Chat
+# [WebRTC Chat](https://ronnie-reagan.github.io/WebRTC-Chat/)
 
 This project provides a WebRTC-based chat service that allows a "Host" and a "Peer" to communicate with each other in a secure and private manner. The code for this project is made available strictly for use in the provided service, and users are not allowed to use, modify, or redistribute the code outside of the intended service.
 
