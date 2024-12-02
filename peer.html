@@ -9,84 +9,112 @@
 
 <body>
     <h1>WebRTC Chat - Peer</h1>
-    <p>Step 1: Ask the host for the "offer" and paste it into the offer box</p>
-    <p>Step 2: Generate Answer and send the answer to the host</p>
-    <p>Step 3: Wait for the connection to be made then start chatting</p>
-    <!-- Name Inputs -->
+    <p>Step 1: Paste the "offer" received from the host and click "Generate Answer"</p>
+    <p>Step 2: Copy the "answer" and share it with the host</p>
+    <p>Step 3: Once the connection is made, you will be able to send and receive messages</p>
     <input type="text" id="peerName" placeholder="Enter your name" />
     <p>Enter offer and answer</p>
-    <textarea id="offer" placeholder="Paste host offer here" rows="10" cols="50"></textarea>
+    <textarea id="offer" placeholder="Paste offer here" rows="10" cols="50"></textarea>
     <textarea id="answer" placeholder="Answer will appear here" rows="10" cols="50"></textarea>
     <input type="text" id="message" placeholder="Enter message">
     <button onclick="sendMessage()">Send Message</button>
-    <button onclick="startPeer()">Generate Answer</button>
+    <button onclick="generateAnswer()">Generate Answer</button>
     <div id="chat"></div>
     <p id="connectionStatus">Waiting for connection...</p>
 
     <script>
-
-        let remoteConnection;
+        let localConnection;
         let receiveChannel;
         const offerTextarea = document.getElementById('offer');
         const answerTextarea = document.getElementById('answer');
         const chat = document.getElementById('chat');
         const connectionStatus = document.getElementById('connectionStatus');
-        const iceCandidates = [];
         const peerNameInput = document.getElementById('peerName');
+        const messageInput = document.getElementById('message');
         let hostName = 'Host';
 
-        async function startPeer() {
-            if (!peerNameInput.value) {
+        function sanitizeHTML(input) {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML;
+        }
+
+        function safeDecode(base64String) {
+            try {
+                return atob(base64String);
+            } catch (e) {
+                alert('Invalid data provided.');
+                throw e;
+            }
+        }
+
+        function safeEncode(json) {
+            return btoa(JSON.stringify(json));
+        }
+
+        async function generateAnswer() {
+            const peerName = sanitizeHTML(peerNameInput.value.trim());
+            if (!peerName) {
                 alert('Please enter your name');
                 return;
             }
 
+            const offerBase64 = offerTextarea.value.trim();
+            if (!offerBase64) {
+                alert('Please paste a valid offer');
+                return;
+            }
+
+            const offer = JSON.parse(safeDecode(offerBase64));
             const config = {
                 iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
             };
-            remoteConnection = new RTCPeerConnection(config);
+            localConnection = new RTCPeerConnection(config);
 
-            remoteConnection.ondatachannel = (event) => {
+            localConnection.ondatachannel = (event) => {
                 receiveChannel = event.channel;
+
                 receiveChannel.onopen = () => {
-                    console.log('Data channel opened');
                     connectionStatus.textContent = `Connected to ${hostName}`;
-
-                    receiveChannel.send(`NAME:${peerNameInput.value}`);
-
+                    receiveChannel.send(`NAME:${peerName}`);
                     offerTextarea.style.display = 'none';
                     answerTextarea.style.display = 'none';
                 };
+
                 receiveChannel.onmessage = (event) => {
-                    if (event.data.startsWith('NAME:')) {
-                        hostName = event.data.substring(5);
+                    const sanitizedData = sanitizeHTML(event.data);
+                    if (sanitizedData.startsWith('NAME:')) {
+                        hostName = sanitizedData.substring(5);
                         connectionStatus.textContent = `Connected to ${hostName}`;
                     } else {
-                        chat.innerHTML += `<p>${hostName}: ${event.data}</p>`;
+                        chat.innerHTML += `<p>${hostName}: ${sanitizedData}</p>`;
                     }
+                };
+
+                receiveChannel.onclose = () => {
+                    connectionStatus.textContent = "Disconnected from Host";
                 };
             };
 
-            remoteConnection.onicecandidate = ({ candidate }) => {
+            localConnection.onicecandidate = ({ candidate }) => {
                 if (candidate) {
-                    iceCandidates.push(candidate);
-                    answerTextarea.value = btoa(JSON.stringify(remoteConnection.localDescription));
+                    answerTextarea.value = safeEncode(localConnection.localDescription);
                 }
             };
 
-            const offer = JSON.parse(atob(offerTextarea.value));
-            await remoteConnection.setRemoteDescription(offer);
-
-            const answer = await remoteConnection.createAnswer();
-            await remoteConnection.setLocalDescription(answer);
-            answerTextarea.value = btoa(JSON.stringify(answer));
+            await localConnection.setRemoteDescription(offer);
+            const answer = await localConnection.createAnswer();
+            await localConnection.setLocalDescription(answer);
+            answerTextarea.value = safeEncode(answer);
         }
 
         function sendMessage() {
-            const message = document.getElementById('message').value;
             if (receiveChannel && receiveChannel.readyState === 'open') {
-                chat.innerHTML += `<p>${peerNameInput.value}: ${message}</p>`;
-                receiveChannel.send(message);
+                const message = sanitizeHTML(messageInput.value.trim());
+                if (message) {
+                    chat.innerHTML += `<p>${sanitizeHTML(peerNameInput.value)}: ${message}</p>`;
+                    receiveChannel.send(message);
+                }
             } else {
                 console.error('Data channel is not open');
             }
