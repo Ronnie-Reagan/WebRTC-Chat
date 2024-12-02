@@ -1,54 +1,87 @@
 # [WebRTC Chat](https://ronnie-reagan.github.io/WebRTC-Chat/)
 
-This project provides a WebRTC-based chat service that allows a "Host" and a "Peer" to communicate with each other in a secure and private manner. The code for this project is made available strictly for use in the provided service, and users are not allowed to use, modify, or redistribute the code outside of the intended service.
+This project provides a **WebRTC-based chat service** that enables secure and private communication between a "Host" and a "Peer." The code for this project is provided strictly for use within the offered service. Users are not allowed to use, modify, or redistribute the code outside of the intended service.
 
-## Features
+---
 
-- **Host**: The host creates an offer and waits for the peer to send an answer.
-- **Peer**: The peer receives the host's offer, generates an answer, and communicates with the host.
-- **Text Chat**: Send messages back and forth once the connection is established.
-- **Data Channels**: Used for peer-to-peer communication.
+## **Features**
 
-## Usage
+- **Host Role**: The host creates a connection offer and waits for the peer to respond with an answer.
+- **Peer Role**: The peer receives the host's offer, generates a connection answer, and establishes communication.
+- **Real-Time Chat**: Exchange messages securely once the connection is established.
+- **Peer-to-Peer Data Channels**: Direct communication between the host and peer, bypassing intermediaries.
 
-To use this service, follow these steps:
+---
 
-Open this this [link](https://ronnie-reagan.github.io/WebRTC-Chat/)
+## **Usage**
 
-### Step 1: Start the Host
+To use the service, follow these steps:
 
-1. Select "Open Host Page"
-2. Click on **Generate Offer** to create an offer.
-3. Copy the generated offer and send it to the Peer (via email, message, etc.).
+1. Open this [link](https://ronnie-reagan.github.io/WebRTC-Chat/).
+2. Follow the instructions for the **Host** and **Peer** setup below.
 
-### Step 2: Start the Peer
+---
 
-1. Select "Open Peer Page"
-2. Paste the Host's offer into the **Offer** textarea.
-3. Click **Generate Answer** to create an answer.
-4. Send the answer back to the Host.
+### **Step 1: Set Up the Host**
 
-### Step 3: Wait for Messages
+1. Click **"Open [Host](https://ronnie-reagan.github.io/WebRTC-Chat/host.html) Page"**.
+2. Generate a connection offer by clicking **"Generate Offer"**.
+3. Copy the generated offer and share it with the Peer securely (e.g., through a note, email, or another communication method).
 
-Once the connection is established, you can start messaging the other party. The messages will appear in the chat box.
+---
 
-## License
+### **Step 2: Set Up the Peer**
 
-This project is licensed under a custom license. You are permitted to use this software only through the provided service. You are not allowed to use, copy, or modify the underlying code. See the [LICENSE](LICENSE) file for full terms and conditions.
+1. Click **"Open [Peer](https://ronnie-reagan.github.io/WebRTC-Chat/peer.html) Page"**.
+2. Paste the Host's offer into the **Offer** field.
+3. Click **"Generate Answer"** to create a connection answer.
+4. Share the answer back with the Host using the same secure method.
 
-### VPN Recommendation
+---
 
-If you wish to hide your IP address and protect your privacy when using this service, the author recommends using a VPN or other privacy-enhancing technologies.
+### **Step 3: Communicate**
 
-## Privacy & Security
+- Once both sides have exchanged offers and answers, the connection will be established.
+- You can start sending messages securely using the chat interface.
 
-While this service uses WebRTC for peer-to-peer communication, the host and peer should exercise caution when using the service in untrusted environments. Always use a VPN if you wish to protect your IP address and ensure that the host/peer cannot track your location or identity.
+---
 
-## No Warranty
+## **Privacy & Security**
 
-This software is provided "as is," without warranty of any kind, express or implied, including but not limited to the warranties of merchantability, fitness for a particular purpose, or non-infringement. In no event shall the author be liable for any claim, damages, or other liability, whether in an action of contract, tort, or otherwise, arising from, out of, or in connection with the software or the use or other dealings in the software.
+This service prioritizes secure and private communication. However, users should take additional steps to ensure maximum security:
 
-## Contact
+1. **Key Exchange**:
+   - For the highest security, exchange the Host's offer and Peer's answer through a trusted, offline method like a handwritten note.
 
-For any questions or feedback, feel free to reach out to the author.
+2. **VPN and Tor**:
+   - For anonymity and IP protection, use a VPN, or combine a VPN with the Tor network for added privacy.
 
+3. **Avoid Public Networks**:
+   - Ensure you're using a secure, private network to prevent eavesdropping.
+
+4. **WebRTC IP Protection**:
+   - Verify your WebRTC setup does not leak your IP address (use tools to test for WebRTC leaks).
+
+5. **One-Time Keys**:
+   - To prevent reuse, consider using a new offer and answer for each session.
+
+---
+
+## **Licensing**
+
+This project is licensed under a **custom license**:
+- Use of the software is permitted only through the provided service.
+- Redistribution, modification, or reverse engineering of the code is strictly prohibited.
+- For full terms, see the [LICENSE](LICENSE) file.
+
+---
+
+## **Disclaimer**
+
+This software is provided **"as is"**, without any guarantees or warranties of any kind. The author is not liable for any damages or issues arising from its use.
+
+---
+
+## **Contact**
+
+For questions, feedback, or support, please contact the author.
