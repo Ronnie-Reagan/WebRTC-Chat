@@ -12,7 +12,6 @@
     <p>Step 1: Generate the "offer" and share it with the peer</p>
     <p>Step 2: Wait for the peer to paste the "answer" and click "Accept Answer"</p>
     <p>Step 3: Once the connection is made, you will be able to send and receive messages</p>
-    <!-- Name Inputs -->
     <input type="text" id="hostName" placeholder="Enter your name" />
     <p>Enter offer and answer</p>
     <textarea id="offer" placeholder="Offer will appear here" rows="10" cols="50"></textarea>
@@ -25,19 +24,38 @@
     <p id="connectionStatus">Waiting for connection...</p>
 
     <script>
-
         let localConnection;
         let sendChannel;
         const offerTextarea = document.getElementById('offer');
         const answerTextarea = document.getElementById('answer');
         const chat = document.getElementById('chat');
         const connectionStatus = document.getElementById('connectionStatus');
-        const iceCandidates = [];
         const hostNameInput = document.getElementById('hostName');
+        const messageInput = document.getElementById('message');
         let peerName = 'Peer';
 
+        function sanitizeHTML(input) {
+            const div = document.createElement('div');
+            div.textContent = input;
+            return div.innerHTML;
+        }
+
+        function safeDecode(base64String) {
+            try {
+                return atob(base64String);
+            } catch (e) {
+                alert('Invalid data provided.');
+                throw e;
+            }
+        }
+
+        function safeEncode(json) {
+            return btoa(JSON.stringify(json));
+        }
+
         async function startHost() {
-            if (!hostNameInput.value) {
+            const hostName = sanitizeHTML(hostNameInput.value.trim());
+            if (!hostName) {
                 alert('Please enter your name');
                 return;
             }
@@ -49,58 +67,59 @@
 
             sendChannel = localConnection.createDataChannel('sendChannel');
             sendChannel.onopen = () => {
-                console.log('Data channel opened');
                 connectionStatus.textContent = `Connected to ${peerName}`;
-
-                sendChannel.send(`NAME:${hostNameInput.value}`);
-
+                sendChannel.send(`NAME:${hostName}`);
                 offerTextarea.style.display = 'none';
                 answerTextarea.style.display = 'none';
             };
+
             sendChannel.onmessage = (event) => {
-                if (event.data.startsWith('NAME:')) {
-                    peerName = event.data.substring(5);
+                const sanitizedData = sanitizeHTML(event.data);
+                if (sanitizedData.startsWith('NAME:')) {
+                    peerName = sanitizedData.substring(5);
                     connectionStatus.textContent = `Connected to ${peerName}`;
                 } else {
-                    chat.innerHTML += `<p>${peerName}: ${event.data}</p>`;
+                    chat.innerHTML += `<p>${peerName}: ${sanitizedData}</p>`;
                 }
             };
+
             sendChannel.onclose = () => {
-                console.log('Data channel closed');
                 connectionStatus.textContent = "Disconnected from Peer";
             };
 
             localConnection.onicecandidate = ({ candidate }) => {
                 if (candidate) {
-                    iceCandidates.push(candidate);
-                    offerTextarea.value = btoa(JSON.stringify(localConnection.localDescription));
+                    offerTextarea.value = safeEncode(localConnection.localDescription);
                 }
             };
 
             const offer = await localConnection.createOffer();
             await localConnection.setLocalDescription(offer);
-            offerTextarea.value = btoa(JSON.stringify(offer));
+            offerTextarea.value = safeEncode(offer);
         }
 
         async function acceptAnswer() {
-            const answer = JSON.parse(atob(answerTextarea.value));
-            await localConnection.setRemoteDescription(answer);
-
-            for (const candidate of iceCandidates) {
-                await localConnection.addIceCandidate(candidate);
+            const answerBase64 = answerTextarea.value.trim();
+            if (!answerBase64) {
+                alert('Please paste a valid answer');
+                return;
             }
+
+            const answer = JSON.parse(safeDecode(answerBase64));
+            await localConnection.setRemoteDescription(answer);
         }
 
         function sendMessage() {
             if (sendChannel.readyState === 'open') {
-                const message = document.getElementById('message').value;
-                chat.innerHTML += `<p>${hostNameInput.value}: ${message}</p>`;
-                sendChannel.send(message);
+                const message = sanitizeHTML(messageInput.value.trim());
+                if (message) {
+                    chat.innerHTML += `<p>${sanitizeHTML(hostNameInput.value)}: ${message}</p>`;
+                    sendChannel.send(message);
+                }
             } else {
                 console.error('Data channel is not open');
             }
         }
-
     </script>
 </body>
 
