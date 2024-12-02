@@ -72,7 +72,7 @@ This service prioritizes secure and private communication. However, users should
 This project is licensed under a **custom license**:
 - Use of the software is permitted only through the provided service.
 - Redistribution, modification, or reverse engineering of the code is strictly prohibited.
-- For full terms, see the [LICENSE](LICENSE) file.
+- For full terms, see the [LICENSE](LICENSE.md) file.
 
 ---
 
