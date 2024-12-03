@@ -114,6 +114,7 @@
                 if (message) {
                     chat.innerHTML += `<p>${sanitizeHTML(peerNameInput.value)}: ${message}</p>`;
                     receiveChannel.send(message);
+                    meesageInput.value = "";
                 }
             } else {
                 console.error('Data channel is not open');
