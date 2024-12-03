@@ -115,7 +115,7 @@
                 if (message) {
                     chat.innerHTML += `<p>${sanitizeHTML(hostNameInput.value)}: ${message}</p>`;
                     sendChannel.send(message);
-                    meesageInput.value = "";
+                    messageInput.value = "";
                 }
             } else {
                 console.error('Data channel is not open');
