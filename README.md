@@ -63,7 +63,7 @@ This service prioritizes secure and private communication. However, users should
    - Verify your WebRTC setup does not leak your IP address (use tools to test for WebRTC leaks).
 
 5. **One-Time Keys**:
-   - To prevent reuse, consider using a new offer and answer for each session.
+   - Each session connection should result in the keys being un-usable. If a connection is dropped, both parties will need to re-do the handshake process.
 
 ---
 
